@@ -1,6 +1,7 @@
 const express = require("express");
 const bcrypt = require("bcryptjs");
 const User = require("../models/user");
+const validationCheck = require("../middleware/validationCheck");
 const router = express.Router();
 
 router.post("/registration", async (req, res) => {
@@ -44,10 +45,11 @@ router.post("/login", async (req, res) => {
     const user = await User.findOne({ username });
     if (user) {
       const verifiedUser = await bcrypt.compare(password, user.password);
-      if (verifiedUser)
+      if (verifiedUser) {
         return res
           .status(200)
           .json({ msg: "Logged in successfully", access_token: user._id });
+      }
       res
         .status(500)
         .json({ msg: "Login credentials didn't match,Please try again" });
@@ -60,8 +62,16 @@ router.post("/login", async (req, res) => {
   }
 });
 
-// router.get('/get', async (req, res) => {
-
-// })
+router.get("/get", validationCheck, async (req, res) => {
+  try {
+    const user = await await User.findById(req.access_token).select(
+      "-password"
+    );
+    res.status(200).json(user);
+  } catch (err) {
+    console.log(err);
+    res.status(500).json({ msg: "Server error" });
+  }
+});
 
 module.exports = router;
