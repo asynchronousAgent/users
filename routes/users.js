@@ -64,10 +64,9 @@ router.post("/login", async (req, res) => {
 
 router.get("/get", validationCheck, async (req, res) => {
   try {
-    const user = await await User.findById(req.access_token).select(
-      "-password"
-    );
-    res.status(200).json(user);
+    const user = await User.findById(req.access_token).select("-password");
+    if (user) res.status(200).json({ user, isvalid: "Access token is valid" });
+    else return res.send("Access token is not valid");
   } catch (err) {
     console.log(err);
     res.status(500).json({ msg: "Server error" });
